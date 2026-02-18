@@ -20,6 +20,7 @@ async def classify(state: AgentState) -> dict:
         language = "en"
 
     valid = {"IN_DOMAIN", "OUT_OF_DOMAIN", "PROMPT_INJECTION", "CONTACT"}
+    
     if classification not in valid:
         classification = "OUT_OF_DOMAIN"
 

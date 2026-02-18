@@ -10,10 +10,12 @@ from app.agent.state import AgentState
 
 def route_by_classification(state: AgentState) -> str:
     classification = state.get("classification", "OUT_OF_DOMAIN")
+
     if classification == "IN_DOMAIN":
         return "retrieve"
     if classification == "CONTACT":
         return "contact_handler"
+        
     return "reject"
 
 

@@ -9,11 +9,13 @@ _openrouter_client: AsyncOpenAI | None = None
 
 def get_openrouter_client() -> AsyncOpenAI:
     global _openrouter_client
+
     if _openrouter_client is None:
         _openrouter_client = AsyncOpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=settings.OPENROUTER_API_KEY,
         )
+
     return _openrouter_client
 
 

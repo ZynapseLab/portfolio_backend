@@ -10,7 +10,7 @@ from app.utils.datetime_utils import utc_now_iso
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
-async def send_email(to: str, subject: str, html_body: str) -> None:
+async def send_email(to: str, subject: str, html_body: str) -> None: # TODO: Revisar el Remisor y Remitente
     msg = MIMEMultipart("alternative")
     msg["From"] = settings.SMTP_USER
     msg["To"] = to

@@ -7,7 +7,7 @@ async def reject(state: AgentState) -> dict:
     classification = state["classification"]
     language = state.get("detected_language", "en")
 
-    if classification == "PROMPT_INJECTION":
+    if classification == "PROMPT_INJECTION": # TODO: Cambiar las respuestas para PI y OOD con mensajes predefinidos.
         template = get_prompt("prompt_injection_response")
     else:
         template = get_prompt("out_of_domain_response")

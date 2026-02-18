@@ -6,8 +6,10 @@ from app.db.collections import conversations_col
 async def get_or_create_conversation(ip: str, scope: str, date: str) -> dict:
     col = conversations_col()
     doc = await col.find_one({"ip": ip, "scope": scope, "date": date, "deleted": False})
+
     if doc:
         return doc
+
     result = await col.insert_one({
         "ip": ip,
         "scope": scope,
@@ -16,6 +18,7 @@ async def get_or_create_conversation(ip: str, scope: str, date: str) -> dict:
         "messages_used": 0,
         "deleted": False,
     })
+    
     return await col.find_one({"_id": result.inserted_id})
 
 

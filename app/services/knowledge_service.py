@@ -6,7 +6,7 @@ from app.db.collections import knowledge_base_col
 _openai_client: AsyncOpenAI | None = None
 
 
-def _get_openai_client() -> AsyncOpenAI:
+def _get_openai_client() -> AsyncOpenAI: # TODO: Cambiar la obtención del cliente a OpenRouter
     global _openai_client
     if _openai_client is None:
         _openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)

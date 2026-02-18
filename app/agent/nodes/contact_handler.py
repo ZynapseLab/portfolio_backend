@@ -9,7 +9,7 @@ async def handle_contact(state: AgentState) -> dict:
 
     if language.lower() not in ("en", "english"):
         translated = ""
-        async for token in stream_chat_completion(
+        async for token in stream_chat_completion( # TODO: Extraer la función repetida a un archivo utils.py
             messages=[
                 {
                     "role": "system",

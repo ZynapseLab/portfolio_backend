@@ -11,6 +11,7 @@ from app.middleware.request_id import RequestIdMiddleware
 from app.routes import chat, conversation, health
 from app.scheduler.daily_cleanup import start_scheduler, stop_scheduler
 from app.services.conversation_service import ensure_indexes
+from app.services.langsmith_tracer import ensure_langsmith_env
 from app.services.prompt_service import load_prompts
 
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,7 @@ async def lifespan(app: FastAPI):
     await connect_db()
     await ensure_indexes()
     await load_prompts()
+    ensure_langsmith_env()
     start_scheduler()
     logger.info("Application started successfully")
     yield

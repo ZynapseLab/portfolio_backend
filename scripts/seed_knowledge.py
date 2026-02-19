@@ -73,7 +73,7 @@ KNOWLEDGE_ENTRIES = [
 
 async def generate_embedding(client: AsyncOpenAI, text: str) -> list[float]:
     response = await client.embeddings.create(
-        model="text-embedding-3-small",
+        model="openai/text-embedding-3-small",
         input=text,
     )
     return response.data[0].embedding
@@ -84,7 +84,10 @@ async def seed():
     db = mongo_client[settings.MONGODB_DATABASE]
     col = db["knowledge_base"]
 
-    openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+    openai_client = AsyncOpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=settings.OPENROUTER_API_KEY,
+    )
 
     for entry in KNOWLEDGE_ENTRIES:
         combined_text = " ".join(entry["sections"])

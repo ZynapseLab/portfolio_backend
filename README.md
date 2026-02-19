@@ -10,7 +10,7 @@ Para levantar el proyecto necesitás:
   cp .env.example .env
 
 
-  Luego editá .env con tus API keys reales (OPENROUTER_API_KEY, OPENAI_API_KEY, JWT_SECRET).
+  Luego editá .env con tus API keys reales (OPENROUTER_API_KEY, JWT_SECRET).
 
   3. Seed de datos en MongoDB:
 

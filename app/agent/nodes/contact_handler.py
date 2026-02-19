@@ -1,6 +1,7 @@
 from app.agent.llm import stream_chat_completion
 from app.agent.state import AgentState
 from app.services.prompt_service import get_prompt
+from app.services.translator import translate_text
 
 
 async def handle_contact(state: AgentState) -> dict:
@@ -8,19 +9,7 @@ async def handle_contact(state: AgentState) -> dict:
     confirmation = get_prompt("contact_confirmation")
 
     if language.lower() not in ("en", "english"):
-        translated = ""
-        async for token in stream_chat_completion( # TODO: Extraer la función repetida a un archivo utils.py
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"Translate the following text to {language}. "
-                    "Output ONLY the translation, nothing else.",
-                },
-                {"role": "user", "content": confirmation},
-            ],
-            temperature=0.3,
-        ):
-            translated += token
+        translated = translate_text(confirmation, language)
         response = translated
     else:
         response = confirmation

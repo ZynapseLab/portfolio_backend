@@ -1,22 +1,11 @@
-from openai import AsyncOpenAI
-
-from app.config import settings
+from app.agent.llm import get_openrouter_client
 from app.db.collections import knowledge_base_col
-
-_openai_client: AsyncOpenAI | None = None
-
-
-def _get_openai_client() -> AsyncOpenAI: # TODO: Cambiar la obtención del cliente a OpenRouter
-    global _openai_client
-    if _openai_client is None:
-        _openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-    return _openai_client
 
 
 async def generate_embedding(text: str) -> list[float]:
-    client = _get_openai_client()
+    client = get_openrouter_client()
     response = await client.embeddings.create(
-        model="text-embedding-3-small",
+        model="openai/text-embedding-3-small",
         input=text,
     )
     return response.data[0].embedding

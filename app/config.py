@@ -11,8 +11,6 @@ class Settings(BaseSettings):
     OPENROUTER_MODEL: str = "anthropic/claude-3.5-sonnet"
     OPENROUTER_CLASSIFIER_MODEL: str = "openai/gpt-4o-mini"
 
-    OPENAI_API_KEY: str = ""
-
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
@@ -36,8 +34,6 @@ class Settings(BaseSettings):
             errors.append("JWT_SECRET must be set to a secure random value")
         if not self.OPENROUTER_API_KEY:
             errors.append("OPENROUTER_API_KEY is required")
-        if not self.OPENAI_API_KEY:
-            errors.append("OPENAI_API_KEY is required")
         if errors:
             raise ValueError(
                 "Missing required configuration:\n" + "\n".join(f"  - {e}" for e in errors)

@@ -26,6 +26,11 @@ class Settings(BaseSettings):
 
     LOG_FILE_PATH: str = "./logs/app.log"
 
+    # LangSmith (observabilidad del agente; opcional)
+    LANGSMITH_TRACING: bool = False
+    LANGSMITH_API_KEY: str = ""
+    LANGSMITH_PROJECT: str = "portfolio-agent"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
     def validate_required(self) -> None:

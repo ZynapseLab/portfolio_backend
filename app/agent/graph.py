@@ -7,6 +7,8 @@ from app.agent.nodes.rejector import reject
 from app.agent.nodes.retriever import retrieve
 from app.agent.state import AgentState
 
+from app.services.langsmith_tracer import tracer
+
 
 def route_by_classification(state: AgentState) -> str:
     classification = state.get("classification", "OUT_OF_DOMAIN")
@@ -15,7 +17,7 @@ def route_by_classification(state: AgentState) -> str:
         return "retrieve"
     if classification == "CONTACT":
         return "contact_handler"
-        
+
     return "reject"
 
 
@@ -48,4 +50,4 @@ def build_graph() -> StateGraph:
     return graph
 
 
-compiled_graph = build_graph().compile()
+compiled_graph = build_graph().compile().with_config(tracer=tracer)

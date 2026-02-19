@@ -16,7 +16,8 @@ from app.services.conversation_service import (
     get_or_create_conversation,
     increment_messages_used,
 )
-from app.services.jwt_service import get_jwt_from_request, set_jwt_cookie
+from app.services.langsmith_tracer import get_trace_config
+from app.services.jwt_service import set_jwt_cookie
 from app.services.log_service import write_log
 from app.services.rate_limit_service import (
     build_rate_limit_response,
@@ -76,7 +77,8 @@ async def chat(body: ChatRequest, request: Request):
         full_response = ""
 
         # Run the graph to get classification and routing
-        result = await compiled_graph.ainvoke(input_state)
+        trace_config = get_trace_config(request_id, ip, scope)
+        result = await compiled_graph.ainvoke(input_state, config=trace_config)
         classification = result.get("classification", "unknown")
 
         # If the graph produced a full_response (reject/contact), stream it

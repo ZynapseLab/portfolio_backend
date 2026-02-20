@@ -1,5 +1,7 @@
+import asyncio
+
 from app.config import settings
-from app.db.collections import contact_leads_col
+from app.db.connection import get_connection
 from app.models.rate_limit import RateLimitErrorResponse
 from app.services.conversation_service import get_messages_used
 from app.utils.datetime_utils import get_reset_at
@@ -12,11 +14,16 @@ async def check_chat_rate_limit(ip: str, scope: str, date: str) -> tuple[bool, i
 
 
 async def check_email_rate_limit(ip: str, date: str) -> tuple[bool, int]:
-    col = contact_leads_col()
-    count = await col.count_documents({
-        "ip": ip,
-        "timestamp": {"$regex": f"^{date}"},
-    })
+    def _query():
+        conn = get_connection()
+        row = conn.execute(
+            "SELECT COUNT(*) AS cnt FROM contact_leads "
+            "WHERE ip=? AND timestamp LIKE ?",
+            (ip, f"{date}%"),
+        ).fetchone()
+        return row["cnt"]
+
+    count = await asyncio.to_thread(_query)
     allowed = count < settings.EMAIL_DAILY_LIMIT
     return allowed, count
 

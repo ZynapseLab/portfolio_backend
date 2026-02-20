@@ -1,16 +1,17 @@
-import aiosmtplib
-from email.mime.text import MIMEText
+import asyncio
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
+import aiosmtplib
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import settings
-from app.db.collections import contact_leads_col
+from app.db.connection import get_connection
 from app.utils.datetime_utils import utc_now_iso
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
-async def send_email(to: str, subject: str, html_body: str) -> None: # TODO: Revisar el Remisor y Remitente
+async def send_email(to: str, subject: str, html_body: str) -> None:  # TODO: Revisar el Remisor y Remitente
     msg = MIMEMultipart("alternative")
     msg["From"] = settings.SMTP_USER
     msg["To"] = to
@@ -50,13 +51,22 @@ async def send_contact_email(data: dict, ip: str) -> None:
         )
         await send_email(data["email"], "We received your message!", confirmation_html)
 
-    col = contact_leads_col()
-    await col.insert_one({
-        "name": data["name"],
-        "email": data["email"],
-        "country": data["country"],
-        "subject": data["subject"],
-        "message": data["message"],
-        "ip": ip,
-        "timestamp": utc_now_iso(),
-    })
+    def _insert_lead():
+        conn = get_connection()
+        conn.execute(
+            "INSERT INTO contact_leads "
+            "(name, email, country, subject, message, ip, timestamp) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                data["name"],
+                data["email"],
+                data["country"],
+                data["subject"],
+                data["message"],
+                ip,
+                utc_now_iso(),
+            ),
+        )
+        conn.commit()
+
+    await asyncio.to_thread(_insert_lead)

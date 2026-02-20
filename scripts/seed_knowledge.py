@@ -1,11 +1,12 @@
-"""Seed script to populate the knowledge_base collection with embeddings."""
+"""Seed script to populate the knowledge_base table with embeddings."""
 
 import asyncio
+import json
 
-from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
 from app.config import settings
+from app.db.connection import init_db, get_connection, close_db
 
 KNOWLEDGE_ENTRIES = [
     {
@@ -80,9 +81,8 @@ async def generate_embedding(client: AsyncOpenAI, text: str) -> list[float]:
 
 
 async def seed():
-    mongo_client = AsyncIOMotorClient(settings.MONGODB_URI)
-    db = mongo_client[settings.MONGODB_DATABASE]
-    col = db["knowledge_base"]
+    init_db()
+    conn = get_connection()
 
     openai_client = AsyncOpenAI(
         base_url="https://openrouter.ai/api/v1",
@@ -94,23 +94,24 @@ async def seed():
         print(f"  Generating embedding for: {entry['source_id']}...")
         embedding = await generate_embedding(openai_client, combined_text)
 
-        await col.update_one(
-            {"source_id": entry["source_id"]},
-            {
-                "$set": {
-                    "source_id": entry["source_id"],
-                    "scope": entry["scope"],
-                    "sections": entry["sections"],
-                    "embedding": embedding,
-                }
-            },
-            upsert=True,
+        conn.execute(
+            "INSERT INTO knowledge_base (source_id, scope, sections, embedding) "
+            "VALUES (?, ?, ?, ?) "
+            "ON CONFLICT(source_id) DO UPDATE SET "
+            "  scope=excluded.scope, sections=excluded.sections, embedding=excluded.embedding",
+            (
+                entry["source_id"],
+                entry["scope"],
+                json.dumps(entry["sections"]),
+                json.dumps(embedding),
+            ),
         )
         print(f"  Upserted: {entry['source_id']}")
 
-    print(f"Seeded {len(KNOWLEDGE_ENTRIES)} knowledge entries.")
+    conn.commit()
+    close_db()
     await openai_client.close()
-    mongo_client.close()
+    print(f"Seeded {len(KNOWLEDGE_ENTRIES)} knowledge entries.")
 
 
 if __name__ == "__main__":

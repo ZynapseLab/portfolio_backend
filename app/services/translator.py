@@ -1,15 +1,10 @@
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-
-TRANSLATOR_MODEL = "google/mt5-small"
-
-
-tokenizer = AutoTokenizer.from_pretrained(TRANSLATOR_MODEL)
-model = AutoModelForSeq2SeqLM.from_pretrained(TRANSLATOR_MODEL)
+from app.agent.llm import get_openrouter_client
+from app.config import settings
 
 
-def translate_text(text: str, target_language: str) -> str:
+async def translate_text(text: str, target_language: str) -> str:
     """
-    Translates text from English to the target language using the specified model.
+    Translates text from English to the target language using OpenRouter.
 
     Args:
         text: The text to translate.
@@ -18,11 +13,19 @@ def translate_text(text: str, target_language: str) -> str:
     Returns:
         The translated text.
     """
-    input_text = (
-        f"Translate the following text from English to {target_language}: {text}"
+    client = get_openrouter_client()
+
+    response = await client.chat.completions.create(
+        model=settings.OPENROUTER_TRANSLATOR_MODEL,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Translate the following text from English to {target_language}. "
+                "Return ONLY the translated text, nothing else.\n\n"
+                f"{text}",
+            }
+        ],
+        temperature=0.3,
     )
 
-    input_ids = tokenizer(input_text, return_tensors="pt").input_ids
-    outputs = model.generate(input_ids)
-
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return response.choices[0].message.content or text

@@ -16,7 +16,7 @@ async def reject(state: AgentState) -> dict:
         template = get_prompt("out_of_domain_response")
 
     if language.lower() not in ("en", "english"):
-        translated = translate_text(template, language)
+        translated = await translate_text(template, language)
     else:
         translated = template
 

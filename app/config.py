@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: str = ""
     OPENROUTER_MODEL: str = "anthropic/claude-3.5-sonnet"
     OPENROUTER_CLASSIFIER_MODEL: str = "openai/gpt-4o-mini"
+    OPENROUTER_TRANSLATOR_MODEL: str = "openai/gpt-4o-mini"
 
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587

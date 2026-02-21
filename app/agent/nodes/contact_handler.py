@@ -9,7 +9,7 @@ async def handle_contact(state: AgentState) -> dict:
     confirmation = get_prompt("contact_confirmation")
 
     if language.lower() not in ("en", "english"):
-        translated = translate_text(confirmation, language)
+        translated = await translate_text(confirmation, language)
         response = translated
     else:
         response = confirmation

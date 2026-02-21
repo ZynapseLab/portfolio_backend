@@ -94,7 +94,8 @@ async def chat(body: ChatRequest, request: Request):
                 full_response += token
                 yield _ndjson_line({"type": "token", "data": token})
 
-        yield _ndjson_line({"type": "done"})
+        async for event in compiled_graph.astream(input_state, stream_mode="custom"):
+            yield _ndjson_line(event)
 
         # Post-stream: save assistant response and log
         if full_response:

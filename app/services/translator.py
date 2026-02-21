@@ -15,7 +15,7 @@ async def translate_text(text: str, target_language: str) -> str:
     """
     client = get_openrouter_client()
 
-    response = await client.chat.completions.create(
+    stream = await client.chat.completions.create(
         model=settings.OPENROUTER_TRANSLATOR_MODEL,
         messages=[
             {
@@ -26,6 +26,10 @@ async def translate_text(text: str, target_language: str) -> str:
             }
         ],
         temperature=0.3,
+        stream=True,
     )
 
-    return response.choices[0].message.content or text
+    async for chunk in stream:
+        delta = chunk.choices[0].delta
+        if delta.content:
+            yield delta.content

@@ -1,10 +1,6 @@
-"""Seed script to populate the prompts collection in MongoDB."""
+"""Seed script to populate the prompts table in SQLite."""
 
-import asyncio
-
-from motor.motor_asyncio import AsyncIOMotorClient
-
-from app.config import settings
+from app.db.connection import init_db, get_connection, close_db
 
 PROMPTS = [
     {
@@ -63,24 +59,22 @@ PROMPTS = [
 ]
 
 
-async def seed():
-    client = AsyncIOMotorClient(settings.MONGODB_URI)
-    db = client[settings.MONGODB_DATABASE]
-    col = db["prompts"]
-
-    await col.create_index("key", unique=True)
+def seed():
+    init_db()
+    conn = get_connection()
 
     for prompt in PROMPTS:
-        await col.update_one(
-            {"key": prompt["key"]},
-            {"$set": prompt},
-            upsert=True,
+        conn.execute(
+            "INSERT INTO prompts (key, content) VALUES (?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET content=excluded.content",
+            (prompt["key"], prompt["content"]),
         )
         print(f"  Upserted prompt: {prompt['key']}")
 
+    conn.commit()
+    close_db()
     print(f"Seeded {len(PROMPTS)} prompts.")
-    client.close()
 
 
 if __name__ == "__main__":
-    asyncio.run(seed())
+    seed()

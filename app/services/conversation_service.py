@@ -1,91 +1,116 @@
-from bson import ObjectId
+import asyncio
 
-from app.db.collections import conversations_col
+from app.db.connection import get_connection
 
 
 async def get_or_create_conversation(ip: str, scope: str, date: str) -> dict:
-    col = conversations_col()
-    doc = await col.find_one({"ip": ip, "scope": scope, "date": date, "deleted": False})
+    def _query():
+        conn = get_connection()
+        row = conn.execute(
+            "SELECT * FROM conversations "
+            "WHERE ip=? AND scope=? AND date=? AND deleted=0",
+            (ip, scope, date),
+        ).fetchone()
+        if row:
+            return dict(row)
+        cursor = conn.execute(
+            "INSERT INTO conversations (ip, scope, date) VALUES (?, ?, ?)",
+            (ip, scope, date),
+        )
+        conn.commit()
+        return dict(
+            conn.execute(
+                "SELECT * FROM conversations WHERE id=?", (cursor.lastrowid,)
+            ).fetchone()
+        )
 
-    if doc:
-        return doc
-
-    result = await col.insert_one({
-        "ip": ip,
-        "scope": scope,
-        "date": date,
-        "messages": [],
-        "messages_used": 0,
-        "deleted": False,
-    })
-    
-    return await col.find_one({"_id": result.inserted_id})
-
-
-async def append_message(conversation_id: ObjectId, role: str, content: str) -> None:
-    col = conversations_col()
-    await col.update_one(
-        {"_id": conversation_id},
-        {"$push": {"messages": {"role": role, "content": content}}},
-    )
+    return await asyncio.to_thread(_query)
 
 
-async def increment_messages_used(conversation_id: ObjectId) -> int:
-    col = conversations_col()
-    result = await col.find_one_and_update(
-        {"_id": conversation_id},
-        {"$inc": {"messages_used": 1}},
-        return_document=True,
-    )
-    return result["messages_used"]
+async def append_message(conversation_id: int, role: str, content: str) -> None:
+    def _insert():
+        conn = get_connection()
+        conn.execute(
+            "INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)",
+            (conversation_id, role, content),
+        )
+        conn.commit()
+
+    await asyncio.to_thread(_insert)
+
+
+async def increment_messages_used(conversation_id: int) -> int:
+    def _update():
+        conn = get_connection()
+        conn.execute(
+            "UPDATE conversations SET messages_used = messages_used + 1 WHERE id=?",
+            (conversation_id,),
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT messages_used FROM conversations WHERE id=?",
+            (conversation_id,),
+        ).fetchone()
+        return row["messages_used"]
+
+    return await asyncio.to_thread(_update)
 
 
 async def get_messages_used(ip: str, scope: str, date: str) -> int:
-    col = conversations_col()
-    pipeline = [
-        {"$match": {"ip": ip, "scope": scope, "date": date}},
-        {"$group": {"_id": None, "total": {"$sum": "$messages_used"}}},
-    ]
-    cursor = col.aggregate(pipeline)
-    result = await cursor.to_list(length=1)
-    if not result:
-        return 0
-    return result[0]["total"]
+    def _query():
+        conn = get_connection()
+        row = conn.execute(
+            "SELECT COALESCE(SUM(messages_used), 0) AS total "
+            "FROM conversations WHERE ip=? AND scope=? AND date=?",
+            (ip, scope, date),
+        ).fetchone()
+        return row["total"]
+
+    return await asyncio.to_thread(_query)
 
 
 async def soft_delete_conversation(ip: str, scope: str, date: str) -> bool:
-    col = conversations_col()
-    result = await col.update_one(
-        {"ip": ip, "scope": scope, "date": date, "deleted": False},
-        {"$set": {"deleted": True}},
-    )
-    return result.modified_count > 0
+    def _update():
+        conn = get_connection()
+        cursor = conn.execute(
+            "UPDATE conversations SET deleted=1 "
+            "WHERE ip=? AND scope=? AND date=? AND deleted=0",
+            (ip, scope, date),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+    return await asyncio.to_thread(_update)
 
 
 async def get_active_messages(ip: str, scope: str, date: str) -> list[dict]:
-    col = conversations_col()
-    doc = await col.find_one(
-        {"ip": ip, "scope": scope, "date": date, "deleted": False},
-        {"messages": 1},
-    )
-    if not doc:
-        return []
-    return doc.get("messages", [])
+    def _query():
+        conn = get_connection()
+        row = conn.execute(
+            "SELECT id FROM conversations "
+            "WHERE ip=? AND scope=? AND date=? AND deleted=0",
+            (ip, scope, date),
+        ).fetchone()
+        if not row:
+            return []
+        rows = conn.execute(
+            "SELECT role, content FROM messages "
+            "WHERE conversation_id=? ORDER BY id",
+            (row["id"],),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    return await asyncio.to_thread(_query)
 
 
 async def daily_cleanup(before_date: str) -> int:
-    col = conversations_col()
-    result = await col.update_many(
-        {"date": {"$lt": before_date}, "deleted": False},
-        {"$set": {"deleted": True}},
-    )
-    return result.modified_count
+    def _update():
+        conn = get_connection()
+        cursor = conn.execute(
+            "UPDATE conversations SET deleted=1 WHERE date<? AND deleted=0",
+            (before_date,),
+        )
+        conn.commit()
+        return cursor.rowcount
 
-
-async def ensure_indexes() -> None:
-    col = conversations_col()
-    await col.create_index([("ip", 1), ("scope", 1), ("date", 1)])
-
-    from app.db.collections import contact_leads_col
-    cl = contact_leads_col()
-    await cl.create_index([("ip", 1), ("timestamp", 1)])
+    return await asyncio.to_thread(_update)

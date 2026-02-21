@@ -17,6 +17,7 @@ class AgentState(TypedDict, total=False):
 
     # Generation
     full_response: str
+    _messages: list[dict]
 
     # Contact
     contact_data: dict

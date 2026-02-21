@@ -6,11 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.db.connection import connect_db, close_db
+from app.db.connection import init_db, close_db
 from app.middleware.request_id import RequestIdMiddleware
 from app.routes import chat, conversation, health
 from app.scheduler.daily_cleanup import start_scheduler, stop_scheduler
-from app.services.conversation_service import ensure_indexes
+from app.services.knowledge_service import load_knowledge_cache
 from app.services.langsmith_tracer import ensure_langsmith_env
 from app.services.prompt_service import load_prompts
 
@@ -21,15 +21,15 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings.validate_required()
-    await connect_db()
-    await ensure_indexes()
-    await load_prompts()
+    init_db()
+    load_prompts()
+    load_knowledge_cache()
     ensure_langsmith_env()
     start_scheduler()
     logger.info("Application started successfully")
     yield
     stop_scheduler()
-    await close_db()
+    close_db()
     logger.info("Application shut down")
 
 

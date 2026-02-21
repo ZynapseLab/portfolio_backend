@@ -59,7 +59,7 @@ async def chat(body: ChatRequest, request: Request):
 
     # Conversation management
     conversation = await get_or_create_conversation(ip, scope, date)
-    conversation_id = conversation["_id"]
+    conversation_id = conversation["id"]
     new_used = await increment_messages_used(conversation_id)
     await append_message(conversation_id, "user", body.message)
     history = await get_active_messages(ip, scope, date)

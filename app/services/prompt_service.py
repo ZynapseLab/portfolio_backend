@@ -1,14 +1,13 @@
-from app.db.collections import prompts_col
+from app.db.connection import get_connection
 
 _cache: dict[str, str] = {}
 
 
-async def load_prompts() -> None:
+def load_prompts() -> None:
     global _cache
-    col = prompts_col()
-    cursor = col.find({}, {"key": 1, "content": 1, "_id": 0})
-    docs = await cursor.to_list(length=100)
-    _cache = {doc["key"]: doc["content"] for doc in docs}
+    conn = get_connection()
+    rows = conn.execute("SELECT key, content FROM prompts").fetchall()
+    _cache = {row["key"]: row["content"] for row in rows}
 
 
 def get_prompt(key: str) -> str:

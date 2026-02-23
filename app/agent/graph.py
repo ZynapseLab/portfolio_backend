@@ -16,6 +16,8 @@ def route_by_classification(state: AgentState) -> str:
         return "retrieve"
     if classification == "CONTACT":
         return "contact_handler"
+    if classification == "CONTACT_INCOMPLETE":
+        return "retrieve"
 
     return "reject"
 

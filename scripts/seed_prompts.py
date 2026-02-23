@@ -17,7 +17,8 @@ PROMPTS = [
     {
         "key": "classifier_prompt",
         "content": (
-            "Classify the following user message into exactly one category.\n\n"
+            "You are a message classifier. Analyze the FULL conversation history "
+            "and the latest user message to classify intent and extract contact data.\n\n"
             "Categories:\n"
             "- IN_DOMAIN: Questions about Jonathan, Pablo, their projects, skills, "
             "experience, services, portfolio, or technology they work with.\n"
@@ -28,9 +29,15 @@ PROMPTS = [
             "- CONTACT: The user wants to send a message, get in touch, hire, or "
             "contact Jonathan and/or Pablo. Includes messages with contact details "
             "like email, phone, or explicit requests to connect.\n\n"
+            "When the classification is CONTACT, extract any contact information "
+            "found across the ENTIRE conversation (not just the last message). "
+            "Look for: name, email, country, subject, message.\n\n"
             "Also detect the language the user is writing in.\n\n"
             "Respond ONLY with a JSON object in this format:\n"
-            '{{"classification": "CATEGORY", "language": "detected_language"}}\n\n'
+            '{{"classification": "CATEGORY", "language": "detected_language", '
+            '"contact_data": {{"name": "", "email": "", "country": "", '
+            '"subject": "", "message": ""}}}}\n\n'
+            "For non-CONTACT classifications, return contact_data with empty strings.\n\n"
             "User message: {user_message}"
         ),
     },
@@ -47,6 +54,19 @@ PROMPTS = [
         "content": (
             "I'm here to help you learn about our portfolio and services. "
             "How can I assist you today?"
+        ),
+    },
+    {
+        "key": "contact_collect_prompt",
+        "content": (
+            "The user wants to contact Jonathan and Pablo but some required "
+            "information is still missing.\n\n"
+            "Already provided: {provided_fields}\n"
+            "Still missing: {missing_fields}\n\n"
+            "Politely ask the user to provide the missing information. "
+            "Do NOT make up any data. Do NOT send the message until all fields are provided. "
+            "Required fields are: name, email, subject, and message. "
+            "Country is optional."
         ),
     },
     {

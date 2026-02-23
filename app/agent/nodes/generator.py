@@ -10,15 +10,28 @@ async def generate(state: AgentState) -> dict:
     context = state.get("retrieved_context", "")
     history = state.get("conversation_history", [])
     user_message = state["user_message"]
+    classification = state.get("classification", "")
 
     writer = get_stream_writer()
 
-    messages = [
-        {
-            "role": "system",
-            "content": f"{system_prompt}\n\n--- Context ---\n{context}",
-        }
-    ]
+    system_content = f"{system_prompt}\n\n--- Context ---\n{context}"
+
+    if classification == "CONTACT_INCOMPLETE":
+        missing = state.get("missing_contact_fields", [])
+        contact_data = state.get("contact_data", {})
+        contact_instruction = get_prompt("contact_collect_prompt")
+        contact_instruction = contact_instruction.replace(
+            "{missing_fields}", ", ".join(missing)
+        )
+        provided_summary = "; ".join(
+            f"{k}: {v}" for k, v in contact_data.items() if v
+        )
+        contact_instruction = contact_instruction.replace(
+            "{provided_fields}", provided_summary or "none"
+        )
+        system_content = f"{system_content}\n\n{contact_instruction}"
+
+    messages = [{"role": "system", "content": system_content}]
 
     for msg in history:
         messages.append({"role": msg["role"], "content": msg["content"]})

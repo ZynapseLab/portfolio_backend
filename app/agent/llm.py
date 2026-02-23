@@ -40,13 +40,24 @@ async def stream_chat_completion(
             yield delta.content
 
 
-async def classify_message(user_message: str, classifier_prompt: str) -> str:
+async def classify_message(
+    user_message: str,
+    classifier_prompt: str,
+    conversation_history: list[dict] | None = None,
+) -> str:
     client = get_openrouter_client()
     prompt = classifier_prompt.replace("{user_message}", user_message)
 
+    messages: list[dict] = [{"role": "system", "content": prompt}]
+
+    if conversation_history:
+        messages.extend(conversation_history)
+
+    messages.append({"role": "user", "content": user_message})
+
     response = await client.chat.completions.create(
         model=settings.OPENROUTER_CLASSIFIER_MODEL,
-        messages=[{"role": "user", "content": prompt}],
+        messages=messages,
         temperature=0.0,
     )
 

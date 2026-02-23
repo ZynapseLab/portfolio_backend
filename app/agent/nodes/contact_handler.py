@@ -11,9 +11,9 @@ async def handle_contact(state: AgentState) -> dict:
     writer = get_stream_writer()
 
     needs_translation = language.lower() not in ("en", "english")
+    translated = ""
 
     if needs_translation:
-        translated = ""
         async for token in translate_text(confirmation, language):
             translated += token
             writer({"type": "token", "data": token})

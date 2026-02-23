@@ -22,3 +22,4 @@ class AgentState(TypedDict, total=False):
     # Contact
     contact_data: dict
     contact_result: str
+    missing_contact_fields: list[str]

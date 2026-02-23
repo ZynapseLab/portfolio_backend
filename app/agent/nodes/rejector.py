@@ -9,6 +9,8 @@ async def reject(state: AgentState) -> dict:
     classification = state["classification"]
     language = state.get("detected_language", "en")
     writer = get_stream_writer()
+    
+    template = ""
 
     if classification == "PROMPT_INJECTION":
         template = get_prompt("prompt_injection_response")
@@ -16,9 +18,10 @@ async def reject(state: AgentState) -> dict:
         template = get_prompt("out_of_domain_response")
 
     needs_translation = language.lower() not in ("en", "english")
-
+    
+    
+    translated = ""
     if needs_translation:
-        translated = ""
         async for token in translate_text(template, language):
             translated += token
             writer({"type": "token", "data": token})

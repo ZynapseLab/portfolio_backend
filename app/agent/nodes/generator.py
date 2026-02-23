@@ -30,6 +30,8 @@ async def generate(state: AgentState) -> dict:
         full_response += token
         writer({"type": "token", "data": token})
 
+    writer({"type": "done"})
+
     # full_response is collected by the streaming handler in the chat route
     # We store the prepared messages in state so the route can stream them
     return {"full_response": full_response}

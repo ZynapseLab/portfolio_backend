@@ -8,6 +8,10 @@ class ChatRequest(BaseModel):
     scope: Literal["global", "jonathan", "pablo"] = "global"
 
 
+class ChatUsageStatsRequest(BaseModel):
+    scope: Literal["global", "jonathan", "pablo"] = "global"
+
+
 class TokenChunk(BaseModel):
     type: Literal["token"] = "token"
     data: str

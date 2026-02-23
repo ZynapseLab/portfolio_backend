@@ -41,6 +41,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Messages-Used", "X-Messages-Limit", "X-Reset-At"],
 )
 app.add_middleware(RequestIdMiddleware)
 

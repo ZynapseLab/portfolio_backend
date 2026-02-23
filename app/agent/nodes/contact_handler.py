@@ -14,14 +14,16 @@ async def handle_contact(state: AgentState) -> dict:
 
     if needs_translation:
         translated = ""
-        async for token in translate_text(template, language):
+        async for token in translate_text(confirmation, language):
             translated += token
             writer({"type": "token", "data": token})
     else:
-        async for token in template:
+        async for token in confirmation:
             writer({"type": "token", "data": f"{token} "})
 
+    writer({"type": "done"})
+
     return {
-        "full_response": response,
+        "full_response": translated if needs_translation else confirmation,
         "contact_result": "contact_suggested",
     }

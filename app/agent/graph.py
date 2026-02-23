@@ -6,7 +6,6 @@ from app.agent.nodes.generator import generate
 from app.agent.nodes.rejector import reject
 from app.agent.nodes.retriever import retrieve
 from app.agent.state import AgentState
-
 from app.services.langsmith_tracer import tracer
 
 
@@ -50,4 +49,4 @@ def build_graph() -> StateGraph:
     return graph
 
 
-compiled_graph = build_graph().compile().with_config(tracer=tracer)
+compiled_graph = build_graph().compile().with_config({"callbacks": [tracer]})

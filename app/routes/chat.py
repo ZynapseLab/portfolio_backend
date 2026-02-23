@@ -6,9 +6,8 @@ from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
 from app.agent.graph import compiled_graph
-from app.agent.llm import stream_chat_completion
 from app.config import settings
-from app.models.chat import ChatRequest
+from app.models.chat import ChatRequest, ChatUsageStatsRequest
 from app.models.jwt_payload import JWTPayload
 from app.services.conversation_service import (
     append_message,
@@ -31,6 +30,22 @@ router = APIRouter()
 
 def _ndjson_line(data: dict) -> bytes:
     return orjson.dumps(data) + b"\n"
+
+
+@router.post("/chat/usage-stats")
+async def usage_stats(body: ChatUsageStatsRequest, request: Request):
+    ip = get_client_ip(request)
+    date = utc_today()
+    scope = body.scope
+
+    allowed, used = await check_chat_rate_limit(ip, scope, date)
+
+    return {
+        "allowed": allowed,
+        "used": used,
+        "limit": settings.CHAT_DAILY_LIMIT,
+        "reset_at": get_reset_at(),
+    }
 
 
 @router.post("/chat")
@@ -78,24 +93,16 @@ async def chat(body: ChatRequest, request: Request):
 
         # Run the graph to get classification and routing
         trace_config = get_trace_config(request_id, ip, scope)
-        result = await compiled_graph.ainvoke(input_state, config=trace_config)
-        classification = result.get("classification", "unknown")
 
-        # If the graph produced a full_response (reject/contact), stream it
-        if result.get("full_response"):
-            full_response = result["full_response"]
-            for i in range(0, len(full_response), 4):
-                chunk = full_response[i : i + 4]
-                yield _ndjson_line({"type": "token", "data": chunk})
-        elif result.get("_messages"):
-            # IN_DOMAIN path: stream from LLM
-            messages = result["_messages"]
-            async for token in stream_chat_completion(messages):
-                full_response += token
-                yield _ndjson_line({"type": "token", "data": token})
-
-        async for event in compiled_graph.astream(input_state, stream_mode="custom"):
-            yield _ndjson_line(event)
+        async for mode, event in compiled_graph.astream(
+            input_state,
+            stream_mode=["custom", "updates"],
+            config=trace_config,
+        ):
+            if mode == "custom":
+                yield _ndjson_line(event)
+                if event.get("type") == "token":
+                    full_response += event["data"]
 
         # Post-stream: save assistant response and log
         if full_response:

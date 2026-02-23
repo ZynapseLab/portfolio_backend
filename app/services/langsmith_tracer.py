@@ -60,6 +60,7 @@ def get_trace_config(
     Permite filtrar y agrupar trazas en LangSmith por scope, request_id, etc.
     """
     return {
+        "callbacks": [tracer],
         "run_name": f"chat/{request_id}",
         "tags": ["chat", f"scope:{scope}"],
         "metadata": {

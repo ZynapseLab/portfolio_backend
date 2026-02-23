@@ -10,20 +10,22 @@ async def reject(state: AgentState) -> dict:
     language = state.get("detected_language", "en")
     writer = get_stream_writer()
 
-    if (
-        classification == "PROMPT_INJECTION"
-    ):  # TODO: Cambiar las respuestas para PI y OOD con mensajes predefinidos.
+    if classification == "PROMPT_INJECTION":
         template = get_prompt("prompt_injection_response")
     else:
         template = get_prompt("out_of_domain_response")
 
-    if language.lower() not in ("en", "english"):
+    needs_translation = language.lower() not in ("en", "english")
+
+    if needs_translation:
         translated = ""
         async for token in translate_text(template, language):
             translated += token
             writer({"type": "token", "data": token})
     else:
         async for token in template:
-            writer({"type": "token", "data": token})
+            writer({"type": "token", "data": f"{token} "})
 
-    return {"full_response": translated}
+    writer({"type": "done"})
+
+    return {"full_response": translated if needs_translation else template}

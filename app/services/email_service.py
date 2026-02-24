@@ -12,6 +12,7 @@ from app.utils.datetime_utils import utc_now_iso
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
+
 _CONFIRMATION_I18N: dict[str, dict[str, str]] = {
     "en": {
         "title": "Message Received",
@@ -47,7 +48,7 @@ def _render_template(template_name: str, **kwargs: str) -> str:
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
-async def send_email(to: str, subject: str, html_body: str) -> None:  # TODO: Revisar el Remisor y Remitente
+async def send_email(to: str, subject: str, html_body: str) -> None:
     msg = MIMEMultipart("alternative")
     msg["From"] = settings.SMTP_USER
     msg["To"] = to
@@ -81,6 +82,7 @@ async def send_contact_email(data: dict, ip: str, language: str = "en") -> None:
 
     if data.get("email"):
         i18n = _get_i18n(language)
+
         confirmation_html = _render_template(
             "contact_confirmation.html",
             lang=language.lower().split("-")[0].split("_")[0],
@@ -88,6 +90,7 @@ async def send_contact_email(data: dict, ip: str, language: str = "en") -> None:
             message=data["message"],
             **i18n,
         )
+
         await send_email(data["email"], i18n["subject"], confirmation_html)
 
     def _insert_lead():

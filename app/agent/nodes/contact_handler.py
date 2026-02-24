@@ -6,26 +6,44 @@ from app.agent.state import AgentState
 from app.services.email_service import send_contact_email
 from app.services.prompt_service import get_prompt
 from app.services.translator import translate_text
+from app.services.rate_limit_service import check_email_rate_limit
+from app.utils.datetime_utils import utc_today
 
 logger = logging.getLogger(__name__)
 
 
 async def handle_contact(state: AgentState) -> dict:
     language = state.get("detected_language", "en")
-    writer = get_stream_writer()
-
     contact_data = state.get("contact_data", {})
     ip = state.get("ip", "unknown")
+    date = utc_today()
     needs_translation = language.lower() not in ("en", "english")
+    response_text = ""
+    allowed, _ = await check_email_rate_limit(ip, date)
+
+    if not allowed:
+        response_text = get_prompt("contact_rate_limit")
+
+        return {
+            "full_response": response_text,
+            "contact_result": "rate_limit",
+        }
+
+    writer = get_stream_writer()
 
     try:
-        await send_contact_email(contact_data, ip, language = "es" if needs_translation else "en") 
+        await send_contact_email(
+            contact_data,
+            ip,
+            language="es" if needs_translation else "en",
+        )
+
         contact_result = "email_sent"
         response_text = get_prompt("contact_confirmation")
     except Exception:
-        logger.exception("Failed to send contact email")
         contact_result = "email_failed"
         response_text = get_prompt("contact_error")
+        logger.exception("Failed to send contact email")
 
     translated = ""
 

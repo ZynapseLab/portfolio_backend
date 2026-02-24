@@ -84,6 +84,13 @@ PROMPTS = [
             "We apologize for the inconvenience."
         ),
     },
+    {
+        "key": "contact_rate_limit",
+        "content": (
+            "Sorry, you have reached the daily limit of 2 emails. "
+            "Please try again tomorrow."
+        ),
+    },
 ]
 
 

@@ -1,6 +1,7 @@
 import asyncio
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from pathlib import Path
 
 import aiosmtplib
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -8,6 +9,15 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from app.config import settings
 from app.db.connection import get_connection
 from app.utils.datetime_utils import utc_now_iso
+
+_TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
+
+
+def _render_template(template_name: str, **kwargs: str) -> str:
+    template = (_TEMPLATES_DIR / template_name).read_text(encoding="utf-8")
+    for key, value in kwargs.items():
+        template = template.replace("{{ " + key + " }}", value)
+    return template
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
@@ -29,13 +39,13 @@ async def send_email(to: str, subject: str, html_body: str) -> None:  # TODO: Re
 
 
 async def send_contact_email(data: dict, ip: str) -> None:
-    html = (
-        f"<h2>New Contact from Portfolio</h2>"
-        f"<p><strong>Name:</strong> {data['name']}</p>"
-        f"<p><strong>Email:</strong> {data['email']}</p>"
-        f"<p><strong>Country:</strong> {data['country']}</p>"
-        f"<p><strong>Subject:</strong> {data['subject']}</p>"
-        f"<p><strong>Message:</strong></p><p>{data['message']}</p>"
+    html = _render_template(
+        "contact_notification.html",
+        name=data["name"],
+        email=data["email"],
+        country=data["country"],
+        subject=data["subject"],
+        message=data["message"],
     )
 
     recipients = [settings.JONATHAN_EMAIL, settings.PABLO_EMAIL]
@@ -44,10 +54,10 @@ async def send_contact_email(data: dict, ip: str) -> None:
             await send_email(recipient, f"Portfolio Contact: {data['subject']}", html)
 
     if data.get("email"):
-        confirmation_html = (
-            f"<h2>Thank you for contacting us, {data['name']}!</h2>"
-            f"<p>We received your message and will get back to you soon.</p>"
-            f"<p><strong>Your message:</strong></p><p>{data['message']}</p>"
+        confirmation_html = _render_template(
+            "contact_confirmation.html",
+            name=data["name"],
+            message=data["message"],
         )
         await send_email(data["email"], "We received your message!", confirmation_html)
 

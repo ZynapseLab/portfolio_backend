@@ -8,6 +8,7 @@ async def send_email_tool(
     subject: str,
     message: str,
     ip: str,
+    language: str = "en",
 ) -> str:
     try:
         await send_contact_email(
@@ -19,6 +20,7 @@ async def send_email_tool(
                 "message": message,
             },
             ip=ip,
+            language=language,
         )
         return "Email sent successfully."
     except Exception as e:

@@ -21,29 +21,25 @@ async def handle_contact(state: AgentState) -> dict:
     response_text = ""
     allowed, _ = await check_email_rate_limit(ip, date)
 
+    writer = get_stream_writer()
+    contact_result = ""
+    
     if not allowed:
         response_text = get_prompt("contact_rate_limit")
-
-        return {
-            "full_response": response_text,
-            "contact_result": "rate_limit",
-        }
-
-    writer = get_stream_writer()
-
-    try:
-        await send_contact_email(
-            contact_data,
-            ip,
-            language="es" if needs_translation else "en",
-        )
-
-        contact_result = "email_sent"
-        response_text = get_prompt("contact_confirmation")
-    except Exception:
-        contact_result = "email_failed"
-        response_text = get_prompt("contact_error")
-        logger.exception("Failed to send contact email")
+    else:
+        try:
+            await send_contact_email(
+                contact_data,
+                ip,
+                language="es" if needs_translation else "en",
+            )
+    
+            contact_result = "email_sent"
+            response_text = get_prompt("contact_confirmation")
+        except Exception:
+            contact_result = "email_failed"
+            response_text = get_prompt("contact_error")
+            logger.exception("Failed to send contact email")
 
     translated = ""
 

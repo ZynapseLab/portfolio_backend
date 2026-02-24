@@ -48,6 +48,23 @@ async def usage_stats(body: ChatUsageStatsRequest, request: Request):
     }
 
 
+@router.post("/chat/history")
+async def chat_history(body: ChatUsageStatsRequest, request: Request):
+    ip = get_client_ip(request)
+    date = utc_today()
+    rows = await get_active_messages(ip, body.scope, date)
+    messages = [
+        {
+            "id": str(r["id"]),
+            "role": r["role"],
+            "content": r["content"],
+            "timestamp": r["created_at"],
+        }
+        for r in rows
+    ]
+    return {"messages": messages}
+
+
 @router.post("/chat")
 async def chat(body: ChatRequest, request: Request):
     start = time.monotonic()

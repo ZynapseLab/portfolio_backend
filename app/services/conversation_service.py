@@ -94,7 +94,7 @@ async def get_active_messages(ip: str, scope: str, date: str) -> list[dict]:
         if not row:
             return []
         rows = conn.execute(
-            "SELECT role, content FROM messages "
+            "SELECT id, role, content, created_at FROM messages "
             "WHERE conversation_id=? ORDER BY id",
             (row["id"],),
         ).fetchall()

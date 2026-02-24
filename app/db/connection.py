@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS messages (
     conversation_id INTEGER NOT NULL,
     role            TEXT    NOT NULL,
     content         TEXT    NOT NULL,
+    created_at      REAL   NOT NULL DEFAULT (strftime('%s','now')),
     FOREIGN KEY (conversation_id) REFERENCES conversations(id)
 );
 

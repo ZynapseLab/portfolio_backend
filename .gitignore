@@ -9,14 +9,8 @@ build/
 .venv/
 venv/
 
-# Database 
-data/
-
 # Logs
 logs/
-
-# Scripts
-scripts/
 
 # Environment variables
 .env

@@ -35,9 +35,11 @@ async def stream_chat_completion(
     )
 
     async for chunk in stream:
-        delta = chunk.choices[0].delta
-        if delta.content:
-            yield delta.content
+          if not chunk.choices:
+              continue
+          delta = chunk.choices[0].delta
+          if delta.content:
+              yield delta.content
 
 
 async def classify_message(

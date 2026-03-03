@@ -26,8 +26,7 @@ async def reject(state: AgentState) -> dict:
             translated += token
             writer({"type": "token", "data": token})
     else:
-        async for token in template:
-            writer({"type": "token", "data": f"{token} "})
+        writer({"type": "token", "data": template})
 
     writer({"type": "done"})
 

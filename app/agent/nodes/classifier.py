@@ -19,19 +19,28 @@ async def classify(state: AgentState) -> dict:
         classification = parsed.get("classification", "OUT_OF_DOMAIN")
         language = parsed.get("language", "en")
         contact_data = parsed.get("contact_data", {})
+        resolved_scope = parsed.get("resolved_scope", "")
     except (json.JSONDecodeError, AttributeError):
         classification = "OUT_OF_DOMAIN"
         language = "en"
         contact_data = {}
+        resolved_scope = ""
 
     valid = {"IN_DOMAIN", "OUT_OF_DOMAIN", "PROMPT_INJECTION", "CONTACT"}
 
     if classification not in valid:
         classification = "OUT_OF_DOMAIN"
 
+    # Override scope when the classifier narrows it from global.
+    current_scope = state.get("scope", "global")
+    valid_scopes = {"jonathan", "pablo", "global"}
+    if current_scope == "global" and resolved_scope in valid_scopes and resolved_scope != "global":
+        current_scope = resolved_scope
+
     result: dict = {
         "classification": classification,
         "detected_language": language,
+        "scope": current_scope,
     }
 
     if classification == "CONTACT":

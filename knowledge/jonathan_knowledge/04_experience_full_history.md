@@ -46,3 +46,18 @@ Web Developer:
 - Participated in production deployment of pharmacy inventory systems.
 
 Technologies: PHP, JavaScript, HTML5, CSS, Bootstrap.
+
+---
+
+## Career & Education Timeline
+
+- Vertebra — AI Developer (May 2025 - Present) ← Current role
+- UNIMINUTO Colombia — Specialization in Artificial Intelligence (2025)
+- Vertebra — Fullstack Developer (Aug 2024 - May 2025)
+- Vertebra — Frontend Developer (Apr 2023 - Aug 2024)
+- Grooming Argentina — Web Developer (Feb 2023 - Apr 2023)
+- Henry — Teaching Assistant (Jan 2023 - Mar 2023)
+- SENA — Sennova Lab (Jul 2022 - Dec 2022)
+- Meintegral S.A.S — Web Developer (2021 - 2022)
+- SENA — Computer Systems Technician (2020 - 2021)
+- Universidad de Caldas — Mechatronics Engineering (2018 - 2022)

@@ -2,7 +2,7 @@
 
 ## Extracto Profesional
 
-Ingeniero mecatrónico y desarrollador de software especializado en soluciones de inteligencia artificial aplicadas a entornos empresariales.
+Ingeniero mecatrónico y desarrollador de software con más de 4 años y medio de experiencia, especializado en soluciones de inteligencia artificial aplicadas a entornos empresariales.
 
 Diseño e implemento arquitecturas basadas en LLMs, flujos de agentes y sistemas RAG, utilizando herramientas como LangGraph, Redis y MongoDB para gestionar memoria persistente, contexto y orquestación de procesos complejos.
 

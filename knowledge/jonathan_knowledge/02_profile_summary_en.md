@@ -2,7 +2,7 @@
 
 ## Professional Summary
 
-Mechatronics engineer and software developer specialized in building AI-driven solutions for enterprise environments.
+Mechatronics engineer and software developer with over 4 and a half years of experience, specialized in building AI-driven solutions for enterprise environments.
 
 I design and implement architectures based on LLMs, agent workflows, and Retrieval-Augmented Generation (RAG) systems using tools such as LangGraph, Redis, and MongoDB to manage persistent memory, contextual reasoning, and complex process orchestration.
 

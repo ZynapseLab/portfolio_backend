@@ -45,7 +45,7 @@ async def generate_embedding(text: str) -> list[float]:
 async def vector_search(
     query_embedding: list[float],
     scope: str,
-    top_k: int = 5,
+    top_k: int = 10,
 ) -> list[dict]:
     if _knowledge_cache is None:
         load_knowledge_cache()

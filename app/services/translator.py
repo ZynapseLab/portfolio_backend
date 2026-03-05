@@ -30,6 +30,8 @@ async def translate_text(text: str, target_language: str) -> str:
     )
 
     async for chunk in stream:
-        delta = chunk.choices[0].delta
-        if delta.content:
-            yield delta.content
+          if not chunk.choices:
+              continue
+          delta = chunk.choices[0].delta
+          if delta.content:
+              yield delta.content

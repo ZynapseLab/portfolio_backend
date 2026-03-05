@@ -49,8 +49,8 @@ def _split_by_sections(text: str) -> list[str]:
     returned as a single chunk.
     """
     parts = re.split(r"(?=^## )", text, flags=re.MULTILINE)
-    chunks = [p.strip() for p in parts if p.strip()]
-    return chunks
+    chunks = [p.strip() for p in parts if p.strip() and p.strip().startswith("## ")]
+    return chunks if chunks else [text.strip()]
 
 
 def _build_chunks(text: str) -> list[dict]:
@@ -162,6 +162,20 @@ async def main() -> None:
         embeddings = await _embed_batch(client, texts)
         all_embeddings.extend(embeddings)
         print(f"  Batch {i // BATCH_SIZE + 1}: {len(batch)} embeddings")
+
+    # Clean stale entries not present in current knowledge files.
+    valid_ids = {e["source_id"] for e in entries}
+    existing_ids = {
+        row[0]
+        for row in conn.execute("SELECT source_id FROM knowledge_base").fetchall()
+    }
+    stale_ids = existing_ids - valid_ids
+    if stale_ids:
+        conn.executemany(
+            "DELETE FROM knowledge_base WHERE source_id = ?",
+            [(sid,) for sid in stale_ids],
+        )
+        print(f"\nCleaned {len(stale_ids)} stale chunk(s)")
 
     # Upsert into DB.
     inserted = 0

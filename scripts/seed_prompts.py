@@ -51,8 +51,14 @@ PROMPTS = [
             "found across the ENTIRE conversation (not just the last message). "
             "Look for: name, email, country, subject, message.\n\n"
             "Also detect the language the user is writing in.\n\n"
+            "Scope resolution (IMPORTANT):\n"
+            "Determine who the user is asking about:\n"
+            '- "jonathan" — the question is specifically about Jonathan.\n'
+            '- "pablo" — the question is specifically about Pablo.\n'
+            '- "global" — the question is about both, or it is unclear.\n\n'
             "Respond ONLY with a JSON object in this format:\n"
             '{{"classification": "CATEGORY", "language": "detected_language", '
+            '"resolved_scope": "jonathan|pablo|global", '
             '"contact_data": {{"name": "", "email": "", "country": "", '
             '"subject": "", "message": ""}}}}\n\n'
             "For non-CONTACT classifications, return contact_data with empty strings.\n\n"

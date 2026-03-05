@@ -19,3 +19,15 @@ Developed a full-stack application for digital certification management.
 ## Teaching Assistant
 
 Academic role as Teaching Assistant in Logic and Programming Techniques, training over 90 students.
+
+---
+
+## Career & Education Timeline
+
+- VCSOFT — Cloud Developer, AI Team (Current) ← Current role
+- CHEC, EPM Group — Smart metering solutions (Energy sector)
+- CognitiVital — Evolutionary algorithms for training plans
+- Universidad Autónoma de Manizales — Full-stack application for digital certification
+- Teaching Assistant — Logic and Programming Techniques (90+ students)
+- Universidad Autónoma de Manizales — Systems Engineering (2021 - 2025)
+- ICPC & ACIS National Programming Marathon (2022, 2023, 2024)

@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.db.connection import init_db, close_db
 from app.middleware.request_id import RequestIdMiddleware
-from app.routes import chat, conversation, health
+from app.routes import chat, contact, conversation, health
 from app.scheduler.daily_cleanup import start_scheduler, stop_scheduler
 from app.services.knowledge_service import load_knowledge_cache
 from app.services.langsmith_tracer import ensure_langsmith_env
@@ -47,6 +47,7 @@ app.add_middleware(RequestIdMiddleware)
 
 app.include_router(health.router)
 app.include_router(chat.router)
+app.include_router(contact.router)
 app.include_router(conversation.router)
 
 

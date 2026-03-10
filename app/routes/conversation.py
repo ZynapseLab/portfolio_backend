@@ -12,22 +12,16 @@ router = APIRouter()
 @router.delete("/conversation")
 async def delete_conversation(request: Request):
     ip = get_client_ip(request)
-    payload = get_jwt_from_request(request)
+    qry_params = request.query_params
     date = utc_today()
 
-    scope = payload.scope if payload else "global"
+    scope = qry_params.get("scope") if qry_params.get("scope") else "global"
     deleted = await soft_delete_conversation(ip, scope, date)
 
     response = Response(status_code=200)
-    new_payload = JWTPayload(
-        ip=ip,
-        scope=scope,
-        messages_used=payload.messages_used if payload else 0,
-        date=date,
-    )
-    set_jwt_cookie(response, new_payload)
 
     if deleted:
         return response
+
     response.status_code = 404
     return response

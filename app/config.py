@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     OPENROUTER_MODEL: str = "anthropic/claude-3.5-sonnet"
     OPENROUTER_CLASSIFIER_MODEL: str = "openai/gpt-4o-mini"
     OPENROUTER_TRANSLATOR_MODEL: str = "openai/gpt-4o-mini"
+    OPENROUTER_EMBEDDING_MODEL: str = "openai/text-embedding-3-small"
 
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
@@ -29,7 +30,14 @@ class Settings(BaseSettings):
     # LangSmith (observabilidad del agente; opcional)
     LANGSMITH_TRACING: bool = False
     LANGSMITH_API_KEY: str = ""
+    LANGSMITH_ENDPOINT: str = ""
     LANGSMITH_PROJECT: str = "portfolio-agent"
+
+    # Weaviate (vector database; opcional)
+    WEAVIATE_HOST: str = "localhost"
+    WEAVIATE_PORT: int = 8554
+    WEAVIATE_GRPC_PORT: int = 50051
+    WEAVIATE_API_KEY: str = ""
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
@@ -41,7 +49,8 @@ class Settings(BaseSettings):
             errors.append("OPENROUTER_API_KEY is required")
         if errors:
             raise ValueError(
-                "Missing required configuration:\n" + "\n".join(f"  - {e}" for e in errors)
+                "Missing required configuration:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
 

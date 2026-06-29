@@ -6,11 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.db.connection import init_db, close_db
+from app.db.connection import close_db, init_db
 from app.middleware.request_id import RequestIdMiddleware
 from app.routes import chat, conversation, health
 from app.scheduler.daily_cleanup import start_scheduler, stop_scheduler
-from app.services.knowledge_service import load_knowledge_cache
+from app.services.knowledge import load_knowledge_cache
 from app.services.langsmith_tracer import ensure_langsmith_env
 from app.services.prompt_service import load_prompts
 

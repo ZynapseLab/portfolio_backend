@@ -1,3 +1,4 @@
+import hashlib
 import re
 
 
@@ -30,6 +31,7 @@ class MarkdownChunker:
 
         for idx, section in enumerate(sections):
             header_match = re.match(r"^##\s+(.+)$", section, re.MULTILINE)
+            section_heading = header_match.group(1).strip() if header_match else None
             slug = header_match.group(1).strip() if header_match else f"section_{idx}"
             # Replace non-alphanumeric characters with underscores, strip leading/trailing underscores, and convert to lowercase
             slug = re.sub(r"[^a-zA-Z0-9:]+", "_", slug).strip("_").lower()
@@ -40,12 +42,11 @@ class MarkdownChunker:
                 {
                     "slug": slug,
                     "source_heading": title,
-                    "section_heading": header_match.group(1).strip()
-                    if header_match
-                    else None,
+                    "section_heading": section_heading,
                     "chunk_index": idx,
                     "section_text": section,
                     "embed_text": embed_text,
+                    "embed_hash": hashlib.sha256(embed_text.encode("utf-8")).hexdigest(),
                 }
             )
 

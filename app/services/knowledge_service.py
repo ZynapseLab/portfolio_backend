@@ -1,36 +1,13 @@
-import json
-import math
+from weaviate.classes.query import MetadataQuery
+from weaviate.collections.classes.filters import Filter
 
 from app.agent.llm import get_openrouter_client
-from app.db.connection import get_connection
-
-_knowledge_cache: list[dict] | None = None
-
-
-def _cosine_similarity(a: list[float], b: list[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
-    norm_a = math.sqrt(sum(x * x for x in a))
-    norm_b = math.sqrt(sum(x * x for x in b))
-    if norm_a == 0 or norm_b == 0:
-        return 0.0
-    return dot / (norm_a * norm_b)
+from app.services.vector_store_service import weaviate_client_manager
+from app.services.vector_store_service.schemas import KNOWLEDGE_COLLECTIONS
 
 
 def load_knowledge_cache() -> None:
-    """Load all knowledge entries into memory for in-process vector search."""
-    global _knowledge_cache
-    conn = get_connection()
-    rows = conn.execute(
-        "SELECT scope, sections, embedding FROM knowledge_base"
-    ).fetchall()
-    _knowledge_cache = [
-        {
-            "scope": row["scope"],
-            "sections": json.loads(row["sections"]),
-            "embedding": json.loads(row["embedding"]),
-        }
-        for row in rows
-    ]
+    """Kept for startup compatibility; Weaviate serves knowledge at query time."""
 
 
 async def generate_embedding(text: str) -> list[float]:
@@ -47,25 +24,32 @@ async def vector_search(
     scope: str,
     top_k: int = 10,
 ) -> list[dict]:
-    if _knowledge_cache is None:
-        load_knowledge_cache()
+    collection_name = KNOWLEDGE_COLLECTIONS["devs"]
+    filters = None if scope == "global" else Filter.by_property("scope").equal(scope)
 
-    if scope == "global":
-        candidates = [e for e in _knowledge_cache if e["scope"] in ("jonathan", "pablo")]
-    else:
-        candidates = [e for e in _knowledge_cache if e["scope"] == scope]
+    async with weaviate_client_manager as client:
+        if not await client.collections.exists(collection_name):
+            return []
 
-    scored = []
-    for entry in candidates:
-        score = _cosine_similarity(query_embedding, entry["embedding"])
-        scored.append({
-            "sections": entry["sections"],
-            "scope": entry["scope"],
-            "score": score,
-        })
+        collection = client.collections.get(collection_name)
+        response = await collection.query.near_vector(
+            near_vector=query_embedding,
+            limit=top_k,
+            filters=filters,
+            return_metadata=MetadataQuery(distance=True),
+            return_properties=["scope", "section_text"],
+        )
 
-    scored.sort(key=lambda x: x["score"], reverse=True)
-    return scored[:top_k]
+    return [
+        {
+            "sections": [obj.properties["section_text"]],
+            "scope": obj.properties["scope"],
+            "score": 1 - obj.metadata.distance
+            if obj.metadata and obj.metadata.distance is not None
+            else 0.0,
+        }
+        for obj in response.objects
+    ]
 
 
 def format_context(documents: list[dict]) -> str:

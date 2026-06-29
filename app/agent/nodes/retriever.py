@@ -1,5 +1,5 @@
 from app.agent.state import AgentState
-from app.services.knowledge_service import (
+from app.services.knowledge import (
     format_context,
     generate_embedding,
     vector_search,

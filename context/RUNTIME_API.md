@@ -6,3 +6,4 @@
 - CORS defaults to `http://localhost:4321` and exposes chat usage headers: `X-Messages-Used`, `X-Messages-Limit`, `X-Reset-At`.
 - Docker runs `uvicorn main:app --host 0.0.0.0 --port 8000`; README uses `.venv/bin/uvicorn main:app --reload` for local dev.
 - `/health` executes `SELECT 1` through the initialized SQLite connection, so it fails if startup DB initialization failed.
+- Weaviate is configured for Weaviate Cloud through `WEAVIATE_URL` and `WEAVIATE_API_KEY`; do not use local host/port settings for cloud deployments.

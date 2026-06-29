@@ -30,13 +30,10 @@ class Settings(BaseSettings):
     # LangSmith (observabilidad del agente; opcional)
     LANGSMITH_TRACING: bool = False
     LANGSMITH_API_KEY: str = ""
-    LANGSMITH_ENDPOINT: str = ""
     LANGSMITH_PROJECT: str = "portfolio-agent"
 
     # Weaviate (vector database; opcional)
-    WEAVIATE_HOST: str = "localhost"
-    WEAVIATE_PORT: int = 8554
-    WEAVIATE_GRPC_PORT: int = 50051
+    WEAVIATE_URL: str = ""
     WEAVIATE_API_KEY: str = ""
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}

@@ -16,9 +16,8 @@ from langsmith.anonymizer import create_anonymizer
 
 from app.config import settings
 
-
 anonymizer = create_anonymizer(
-    [
+    replacer=[
         # Matches Public IPv4 addresses
         {"pattern": r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", "replacement": "0.0.0.0"},
         # Matches Public IPv6 addresses

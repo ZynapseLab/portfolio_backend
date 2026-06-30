@@ -11,7 +11,9 @@ from app.utils.datetime_utils import utc_now
 
 def create_token(payload: JWTPayload) -> str:
     now = utc_now()
-    tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow = (now + timedelta(days=1)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
     data = payload.model_dump()
     data["exp"] = tomorrow
     return jwt.encode(data, settings.JWT_SECRET, algorithm="HS256")
@@ -39,6 +41,8 @@ def set_jwt_cookie(response: Response, payload: JWTPayload) -> None:
 
 def get_jwt_from_request(request: Request) -> JWTPayload | None:
     token = request.cookies.get("session")
+
     if not token:
         return None
+
     return decode_token(token)

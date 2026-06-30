@@ -2,7 +2,7 @@ from langgraph.config import get_stream_writer
 
 from app.agent.state import AgentState
 from app.services.prompt_service import get_prompt
-from app.agent.llm import stream_chat_completion
+from app.services.llm_service import stream_chat_completion
 
 
 async def generate(state: AgentState) -> dict:

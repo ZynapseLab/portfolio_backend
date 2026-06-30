@@ -1,11 +1,13 @@
 from typing import TypedDict
 
+from openai.types.chat import ChatCompletionMessageParam
 
-class AgentState(TypedDict, total=False):
+
+class AgentState(TypedDict):
     # Input
     user_message: str
     scope: str
-    conversation_history: list[dict]
+    conversation_history: list[ChatCompletionMessageParam]
     ip: str
 
     # Classification

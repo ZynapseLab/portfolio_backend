@@ -6,4 +6,5 @@
 - `seed_knowledge` splits markdown by `##` sections, prepends the `#` title to embedding text, and stores objects in Weaviate collections from `KNOWLEDGE_COLLECTIONS` with self-provided OpenRouter embeddings.
 - Seeded Weaviate objects include `source_id`, chunk metadata, `content_hash`, and `embedding_model`; the seed script writes one `knowledge/vectors/<CollectionName>.joblib` vector cache per collection, reuses matching cached vectors before calling OpenRouter, then deletes stale Weaviate objects and stale cache entries.
 - Runtime retrieval queries Weaviate `DevsKnowledge` with `near_vector`; `global` scope searches all dev entries and specific scopes filter by the `scope` property.
+- `app/services/knowledge/retrieve/search.py` uses Weaviate hybrid search with self-provided OpenRouter query embeddings, relative-score fusion, boosted heading fields, optional `scope` filtering, and normalized result dictionaries for RAG context assembly.
 - If knowledge files change, reseed with `.venv/bin/python -m scripts.seed_knowledge`; this requires `OPENROUTER_API_KEY`, `WEAVIATE_URL`, `WEAVIATE_API_KEY`, and a reachable Weaviate Cloud cluster.
